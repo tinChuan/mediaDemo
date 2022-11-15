@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
  */
 @RestController
 @RequestMapping("/medias")
+
 public class Controller {
     
     @Value("${demo.cap1}")
@@ -42,7 +44,7 @@ public class Controller {
     
     //end point 1  // http://localhost:8081/medias?top=3
     @RequestMapping("")
-    public Catalogs getList(@RequestParam("top") String top){
+    public  Catalogs getList(@RequestParam("top") String top){
         Catalogs catalogs=null;
         for(Character c:top.toCharArray()){
             if(!Character.isDigit(c))return null;//go to error page.
@@ -58,7 +60,7 @@ public class Controller {
             e.printStackTrace();
             //go to erro page
         }
-        return catalogs;
+        return  catalogs;
     }
     //end point 2 //http://localhost:8081/medias/32254
     @RequestMapping("/{mediaID}")
@@ -77,7 +79,7 @@ public class Controller {
     
     //end point 3      //http://localhost:8081/medias/details/32254?imageType=poster
     @RequestMapping("/details/{mediasNum}")
-    public Details getListWithDetails(@PathVariable("mediasNum") String mediasNum,@RequestParam("imageType") String imageType,Model model){
+    public Details getDetailsWithImageType(@PathVariable("mediasNum") String mediasNum,@RequestParam("imageType") String imageType,Model model){
         Details d = null;
         // should vaild the input mediasNum and imageType at here.based on the data type and format in cap2 side 
         try{
@@ -95,6 +97,31 @@ public class Controller {
                 //go to error page
             }
         return d;
+        
+    } 
+    
+    
+    //http://localhost:8081/medias/movies?mediasNum=2&imageType=poster
+     @RequestMapping("/movies")
+    public MediaInfo getMoviesDetailsWithImageType(@RequestParam("mediasNum") String mediasNum,@RequestParam("imageType") String imageType,Model model){
+        Catalogs catalogs=null;
+        List<Image> updated=null;
+        catalogs = restTemplate.getForObject(MEDIA_CATALOG+mediasNum, Catalogs.class);
+         List<Details> res= new ArrayList<>();
+        for(Catalog c:catalogs.getItems()){
+            String id= c.getId();
+            Details d = restTemplate.getForObject(MEDIA_DETAILS+id,Details.class);
+            updated = new ArrayList<>();
+            for(Image image:d.getImages()){
+                if(image.getType().equals(imageType))
+                   updated.add(image);
+            }
+            d.setImages(updated);
+            res.add(d);
+        }
+        model.addAttribute("details", res);
+        
+        return new MediaInfo(res);
         
     }
 }

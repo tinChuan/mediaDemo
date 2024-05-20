@@ -10,6 +10,7 @@ public class DemoApplication {
 
         @Bean
         public RestTemplate getRestTemplate(){
+            System.out.println("test2024");
             return new RestTemplate();
         }
 	public static void main(String[] args) {

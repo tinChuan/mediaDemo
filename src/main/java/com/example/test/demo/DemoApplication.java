@@ -11,6 +11,7 @@ public class DemoApplication {
         @Bean
         public RestTemplate getRestTemplate(){
             System.out.println("test2024");
+	    System.out.println("test up to down");
             return new RestTemplate();
         }
 	public static void main(String[] args) {
